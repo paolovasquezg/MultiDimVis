@@ -1,2 +1,1 @@
-# MultiDimVis
-Task: Multidimensional Data Visualization
+# Task: Multidimensional Data Visualization
