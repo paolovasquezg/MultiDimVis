@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Spotify Multidimensional Visualization</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f1a;
+      color: #e0e0e0;
+    }
+
+    header {
+      padding: 14px 24px;
+      background: #1a1a2e;
+      border-bottom: 1px solid #2a2a4a;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1db954;
+      letter-spacing: .5px;
+    }
+
+    header p {
+      font-size: .78rem;
+      color: #888;
+    }
+
+    .tasks-bar {
+      display: flex;
+      gap: 8px;
+      padding: 8px 24px;
+      background: #13131f;
+      border-bottom: 1px solid #222;
+    }
+
+    .task-pill {
+      font-size: .72rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #1e1e35;
+      border: 1px solid #333;
+      color: #aaa;
+    }
+
+    .task-pill span {
+      color: #1db954;
+      font-weight: 600;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 10px;
+      padding: 10px;
+      height: calc(100vh - 88px);
+    }
+
+    .panel {
+      background: #15152a;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 8px 12px;
+      background: #1a1a35;
+      border-bottom: 1px solid #2a2a4a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-header h2 {
+      font-size: .8rem;
+      font-weight: 600;
+      color: #ccc;
+    }
+
+    .panel-header .task-tag {
+      font-size: .68rem;
+      color: #1db954;
+    }
+
+    .panel-body {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel-body svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Tooltip */
+    #tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: #1e1e35ee;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: .72rem;
+      line-height: 1.5;
+      max-width: 220px;
+      display: none;
+      z-index: 999;
+      color: #ddd;
+    }
+
+    #tooltip strong {
+      color: #1db954;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 4px 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: .65rem;
+      color: #aaa;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Star coords controls */
+    .sc-controls {
+      padding: 4px 10px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-size: .7rem;
+      color: #888;
+    }
+
+    .sc-controls button {
+      font-size: .68rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #222;
+      border: 1px solid #444;
+      color: #aaa;
+      cursor: pointer;
+    }
+
+    .sc-controls button:hover {
+      background: #333;
+      color: #fff;
+    }
+
+    /* PC axis label rotate */
+    .pc-axis text {
+      font-size: .6rem;
+      fill: #aaa;
+    }
+
+    .reset-btn {
+      font-size: .68rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #222;
+      border: 1px solid #444;
+      color: #aaa;
+      cursor: pointer;
+      margin-left: auto;
+    }
+
+    .reset-btn:hover {
+      background: #1db95422;
+      border-color: #1db954;
+      color: #1db954;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div>
+      <h1>Spotify Audio Feature Explorer — 1921–2020</h1>
+      <p>1,496 tracks · RadViz · Star Coordinates · Parallel Coordinates · PCA Projection · D3.js</p>
+    </div>
+  </header>
+
+  <div class="tasks-bar">
+    <div class="task-pill"><span>T1</span> Do audio features cluster tracks by decade?</div>
+    <div class="task-pill"><span>T2</span> What features separate high-popularity from low-popularity tracks?</div>
+    <div class="task-pill"><span>T3</span> How do dominant audio dimensions shift across decades?</div>
+  </div>
+
+  <div class="grid">
+    <div class="panel" id="panel-radviz">
+      <div class="panel-header">
+        <h2>RadViz — Dimensional Anchoring</h2>
+        <span class="task-tag">T1 · T3</span>
+      </div>
+      <div class="panel-body" id="radviz-container"></div>
+    </div>
+
+    <div class="panel" id="panel-star">
+      <div class="panel-header">
+        <h2>Star Coordinates — Drag axes to reweight</h2>
+        <span class="task-tag">T3</span>
+      </div>
+      <div class="sc-controls">
+        <span>Drag axis endpoints to rotate/scale</span>
+        <button id="sc-reset">Reset axes</button>
+      </div>
+      <div class="panel-body" id="star-container"></div>
+    </div>
+
+    <div class="panel" id="panel-pc">
+      <div class="panel-header">
+        <h2>Parallel Coordinates — Brush to filter</h2>
+        <span class="task-tag">T2</span>
+        <button class="reset-btn" id="pc-reset">Clear brushes</button>
+      </div>
+      <div class="panel-body" id="pc-container"></div>
+    </div>
+
+    <div class="panel" id="panel-pca">
+      <div class="panel-header">
+        <h2>PCA Projection — 2D embedding</h2>
+        <span class="task-tag">T1 · T2</span>
+      </div>
+      <div class="panel-body" id="pca-container"></div>
+    </div>
+  </div>
+
+  <div id="tooltip"></div>
+
+  <script src="/views/helpers/state.js"></script>
+  <script src="/views/graphs/radviz.js"></script>
+  <script src="/views/graphs/star.js"></script>
+  <script src="/views/graphs/parallel.js"></script>
+  <script src="/views/graphs/pca.js"></script>
+  <script src="/views/helpers/main.js"></script>
+</body>
+
+</html>
