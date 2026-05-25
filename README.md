@@ -48,6 +48,10 @@ Basically, early decades are defined by acousticness and instrumentalness, and r
 | T2 | Parallel Coordinates, PCA Projection | Brush feature ranges to isolate popular tracks; toggle popularity color in PCA to see their distribution |
 | T3 | RadViz, Star Coordinates | Point mass migration across decades in RadViz; drag axes in Star Coordinates to find separating dimensions |
 
+## Visualization Preview
+
+![Visualization](images/dashboard.png)
+
 ## Project Structure
 
 ```
