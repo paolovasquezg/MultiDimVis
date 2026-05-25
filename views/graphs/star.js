@@ -45,13 +45,13 @@ function StarCoords(data) {
     .attr("x2", d => d.x).attr("y2", d => d.y).attr("stroke", "#444").attr("stroke-width", 1.5);
 
   const axisLabels = mainGroup.selectAll(".sc-label").data(anchors).enter().append("text")
-    .attr("class", "sc-label").attr("x", d => d.x * 1.14).attr("y", d => d.y * 1.14 + 4)
+    .attr("class", "sc-label").attr("x", d => d.x * 1.14).attr("y", d => d.y - 10)
     .attr("text-anchor", d => d.x > 5 ? "start" : d.x < -5 ? "end" : "middle")
-    .attr("font-size", "9px").attr("fill", "#666").text(d => d.name);
+    .attr("font-size", "15px").attr("fill", "#666").text(d => d.name);
 
   const dots = mainGroup.selectAll(".sc-dot").data(positions).enter().append("circle")
     .attr("class", "sc-dot").attr("cx", d => d.x).attr("cy", d => d.y)
-    .attr("r", 3).attr("fill", d => State.DECADE_COLOR(d.d.decade)).attr("opacity", 0.7)
+    .attr("r", 5).attr("fill", d => State.DECADE_COLOR(d.d.decade)).attr("opacity", 0.7)
 
     .on("mouseover", (_event, d) => {
       tooltip.style.display = "block";
@@ -103,5 +103,5 @@ function StarCoords(data) {
   });
 
 
-  State.onChange(() => { dots.attr("opacity", d => State.isActive(d.d.id) ? 0.85 : 0.06).attr("r", d => State.isActive(d.d.id) ? 3 : 1.5) });
+  State.onChange(() => { dots.attr("opacity", d => State.isActive(d.d.id) ? 0.85 : 0.06).attr("r", d => State.isActive(d.d.id) ? 3.5 : 2) });
 }

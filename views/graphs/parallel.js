@@ -5,7 +5,7 @@ function ParallelCoords(data) {
 
   const width = container.clientWidth;
   const height = container.clientHeight;
-  const margin = { top: 30, right: 20, bottom: 10, left: 20 };
+  const margin = { top: 60, right: 150, bottom: 20, left: 30 };
 
   const GraphWidth = width - margin.left - margin.right;
   const GraphHeight = height - margin.top - margin.bottom;
@@ -47,19 +47,40 @@ function ParallelCoords(data) {
       d3.select(this).attr("stroke-width", 1).attr("opacity", 0.5); tooltip.style.display = "none";
     });
 
+  const brushExtents = Object.fromEntries(features.map(f => [f, null]));
+
+  function applyBrushFilter() {
+    const active = Object.entries(brushExtents).filter(([, ext]) => ext !== null);
+    if (active.length === 0) { State.clear(); return; }
+    const selectedIds = records.filter(record =>
+      active.every(([feature, [y0, y1]]) => {
+        const py = yScales[feature](record[feature] || 0);
+        return py >= y0 && py <= y1;
+      })
+    ).map(record => record.id);
+    State.select(selectedIds);
+  }
+
   features.forEach(feature => {
 
     const axisGroup = mainGroup.append("g").attr("class", "pc-axis").attr("transform", `translate(${xScale(feature)},0)`);
 
     axisGroup.call(d3.axisLeft(yScales[feature]).ticks(5).tickSize(3));
 
-    axisGroup.append("text").attr("y", -8).attr("text-anchor", "middle").attr("font-size", "9px").attr("fill", "#888").text(feature);
+    axisGroup.append("text").attr("y", -30).attr("text-anchor", "middle").attr("font-size", "15px").attr("fill", "#888").text(feature);
+
+    const brush = d3.brushY().extent([[-10, 0], [10, GraphHeight]]).on("brush end", ({ selection }) => {
+      brushExtents[feature] = selection || null; applyBrushFilter();
+    });
+
+    axisGroup.append("g").attr("class", "brush").call(brush)
+      .select(".selection").attr("fill", "#1db95433").attr("stroke", "#1db954").attr("stroke-width", 1);
   });
 
-  const legendGroup = svg.append("g").attr("transform", `translate(${width - 90}, 8)`);
+  const legendGroup = svg.append("g").attr("transform", `translate(${width - 120}, 8)`);
   Categories.forEach((label, i) => {
-    legendGroup.append("circle").attr("cx", 6).attr("cy", i * 13 + 6).attr("r", 4).attr("fill", State.POPULARITY_COLOR(label));
-    legendGroup.append("text").attr("x", 14).attr("y", i * 13 + 10).attr("font-size", "8px").attr("fill", "#888").text(label);
+    legendGroup.append("circle").attr("cx", 6).attr("cy", i * 25 + 6).attr("r", 6).attr("fill", State.POPULARITY_COLOR(label));
+    legendGroup.append("text").attr("x", 18).attr("y", i * 25 + 11).attr("font-size", "20px").attr("fill", "#888").text(label);
   });
 
   document.getElementById("pc-reset").addEventListener("click", () => {

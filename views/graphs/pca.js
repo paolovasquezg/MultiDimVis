@@ -3,7 +3,7 @@ function PCA(data) {
   const container = document.getElementById("pca-container");
   const width = container.clientWidth;
   const height = container.clientHeight;
-  const margin = { top: 20, right: 20, bottom: 30, left: 36 };
+  const margin = { top: 20, right: 70, bottom: 50, left: 70 };
   const graphWidth = width - margin.left - margin.right;
   const graphHeight = height - margin.top - margin.bottom;
 
@@ -30,17 +30,30 @@ function PCA(data) {
   mainGroup.append("g").attr("class", "grid").call(d3.axisLeft(yScale).ticks(5).tickSize(-graphWidth).tickFormat("")).selectAll("line").attr("stroke", "#1e1e30").attr("stroke-dasharray", "2,2");
   mainGroup.append("g").attr("class", "grid").attr("transform", `translate(0,${graphHeight})`).call(d3.axisBottom(xScale).ticks(6).tickSize(-graphHeight).tickFormat("")).selectAll("line").attr("stroke", "#1e1e30").attr("stroke-dasharray", "2,2");
 
-  mainGroup.append("g").attr("transform", `translate(0,${graphHeight})`).call(d3.axisBottom(xScale).ticks(6).tickSize(3)).selectAll("text").attr("font-size", "8px").attr("fill", "#666");
-  mainGroup.append("g").call(d3.axisLeft(yScale).ticks(5).tickSize(3)).selectAll("text").attr("font-size", "8px").attr("fill", "#666");
+  mainGroup.append("g").attr("transform", `translate(0,${graphHeight})`).call(d3.axisBottom(xScale).ticks(6).tickSize(3)).selectAll("text").attr("font-size", "15px").attr("fill", "#666");
+  mainGroup.append("g").call(d3.axisLeft(yScale).ticks(5).tickSize(3)).selectAll("text").attr("font-size", "15px").attr("fill", "#666");
 
-  mainGroup.append("text").attr("x", graphWidth / 2).attr("y", graphHeight + 26).attr("text-anchor", "middle").attr("font-size", "9px").attr("fill", "#666").text(`PC1 (${(pcaVariance[0] * 100).toFixed(1)}% var)`);
-  mainGroup.append("text").attr("transform", "rotate(-90)").attr("x", -graphHeight / 2).attr("y", -28).attr("text-anchor", "middle").attr("font-size", "9px").attr("fill", "#666").text(`PC2 (${(pcaVariance[1] * 100).toFixed(1)}% var)`);
+  mainGroup.append("text").attr("x", graphWidth / 2 - 40).attr("y", graphHeight + 40).attr("text-anchor", "middle").attr("font-size", "15px").attr("fill", "#666").text(`PC1 (${(pcaVariance[0] * 100).toFixed(1)}% var)`);
+  mainGroup.append("text").attr("transform", "rotate(-90)").attr("x", -graphHeight / 2).attr("y", -40).attr("text-anchor", "middle").attr("font-size", "15px").attr("fill", "#666").text(`PC2 (${(pcaVariance[1] * 100).toFixed(1)}% var)`);
 
   const dots = mainGroup.selectAll(".pca-dot").data(records).enter().append("circle")
     .attr("class", "pca-dot").attr("cx", d => xScale(d.pca_x)).attr("cy", d => yScale(d.pca_y))
-    .attr("r", 3.5).attr("fill", d => getColor(d)).attr("opacity", 0.7)
+    .attr("r", 5).attr("fill", d => getColor(d)).attr("opacity", 0.7)
 
-  const legendGroup = svg.append("g").attr("transform", `translate(${width - 76}, ${margin.top})`);
+    .on("mouseover", function (_event, d) {
+      d3.select(this).attr("r", 7).attr("opacity", 1).raise();
+      tooltip.style.display = "block";
+      tooltip.innerHTML = `<strong>${d.name}</strong><br>${d.artists}<br>Year: ${d.year} · Popularity: ${d.popularity} (${d.popularity_type})`;
+    })
+    .on("mousemove", event => {
+      tooltip.style.left = (event.clientX + 12) + "px"; tooltip.style.top = (event.clientY - 10) + "px";
+    })
+    .on("mouseout", function (_event, d) {
+      d3.select(this).attr("r", State.isActive(d.id) ? 5 : 2).attr("opacity", State.isActive(d.id) ? 0.85 : 0.07);
+      tooltip.style.display = "none";
+    })
+
+  const legendGroup = svg.append("g").attr("transform", `translate(${width - 105}, ${margin.top})`);
 
   function buildLegend() {
     legendGroup.selectAll("*").remove();
@@ -48,9 +61,9 @@ function PCA(data) {
     const colorFn = colorMode.value === "decade" ? State.DECADE_COLOR : State.POPULARITY_COLOR;
 
     entries.forEach((entry, i) => {
-      const row = legendGroup.append("g").attr("transform", `translate(0,${i * 12})`);
-      row.append("circle").attr("r", 3.5).attr("cx", 4).attr("cy", 4).attr("fill", colorFn(entry));
-      row.append("text").attr("x", 11).attr("y", 8).attr("font-size", "7.5px").attr("fill", "#888").text(entry);
+      const row = legendGroup.append("g").attr("transform", `translate(0,${i * 25})`);
+      row.append("circle").attr("r", 6).attr("cx", 4).attr("cy", 4).attr("fill", colorFn(entry));
+      row.append("text").attr("x", 18).attr("y", 11).attr("font-size", "20px").attr("fill", "#888").text(entry);
     });
   }
 
@@ -70,22 +83,24 @@ function PCA(data) {
   });
 
   const brushGroup = mainGroup.append("g").attr("class", "pca-brush").call(brush);
-  brushGroup.select(".overlay").attr("fill", "transparent");
+  brushGroup.select(".overlay").attr("fill", "transparent").attr("stroke", "none");
   brushGroup.select(".selection").attr("fill", "#1db95422").attr("stroke", "#1db954").attr("stroke-width", 1);
 
-  const colorToggleGroup = svg.append("g").attr("transform", `translate(${margin.left + 4}, ${margin.top + 4})`);
-  colorToggleGroup.append("rect").attr("width", 110).attr("height", 16).attr("rx", 3).attr("fill", "#222").attr("stroke", "#444").attr("cursor", "pointer");
+  dots.raise();
 
-  const toggleLabel = colorToggleGroup.append("text").attr("x", 55).attr("y", 11.5)
-    .attr("text-anchor", "middle").attr("font-size", "8.5px").attr("fill", "#aaa").attr("pointer-events", "none").text("Color: Decade");
+  const colorToggleGroup = svg.append("g").attr("transform", `translate(${margin.left - 20}, ${margin.top + 4})`);
+  colorToggleGroup.append("rect").attr("width", 120).attr("height", 30).attr("rx", 5).attr("fill", "#222").attr("stroke", "#444").attr("cursor", "pointer");
+
+  const toggleLabel = colorToggleGroup.append("text").attr("x", 58).attr("y", 22)
+    .attr("text-anchor", "middle").attr("font-size", "20px").attr("fill", "#aaa").attr("pointer-events", "none").text("Decade");
 
   colorToggleGroup.on("click", () => {
     colorModeIndex = (colorModeIndex + 1) % colorModes.length;
     colorMode.value = colorModes[colorModeIndex];
-    toggleLabel.text(`Color: ${colorMode.value === "decade" ? "Decade" : "Popularity"}`);
+    toggleLabel.text(`${colorMode.value === "decade" ? "Decade" : "Popularity"}`);
     dots.attr("fill", d => getColor(d));
     buildLegend();
   });
 
-  State.onChange(() => { dots.attr("opacity", d => State.isActive(d.id) ? 0.85 : 0.07).attr("r", d => State.isActive(d.id) ? 3.5 : 2) });
+  State.onChange(() => { dots.attr("opacity", d => State.isActive(d.id) ? 0.85 : 0.07).attr("r", d => State.isActive(d.id) ? 5 : 2) });
 }

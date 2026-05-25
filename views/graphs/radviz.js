@@ -50,16 +50,16 @@ function RadViz(data) {
     .attr("y2", d => d.y).attr("stroke", "#2a2a4a").attr("stroke-width", 1);
 
   mainGroup.selectAll(".anchor-label").data(anchors).enter().append("text")
-    .attr("class", "anchor-label").attr("x", d => d.x * 1.15).attr("y", d => d.y * 1.15 + 4)
+    .attr("class", "anchor-label").attr("x", d => d.x * 1.15).attr("y", d => d.y - 10)
     .attr("text-anchor", d => d.x > 5 ? "start" : d.x < -5 ? "end" : "middle")
-    .attr("font-size", "9px").attr("fill", "#777").text(d => d.name);
+    .attr("font-size", "15px").attr("fill", "#777").text(d => d.name);
 
   mainGroup.selectAll(".anchor-dot").data(anchors).enter().append("circle")
     .attr("class", "anchor-dot").attr("cx", d => d.x)
-    .attr("cy", d => d.y).attr("r", 4).attr("fill", "#1db954");
+    .attr("cy", d => d.y).attr("r", 5).attr("fill", "#1db954");
 
   const dots = mainGroup.selectAll(".rv-dot").data(positions).enter().append("circle")
-    .attr("class", "rv-dot").attr("cx", d => d.x).attr("cy", d => d.y).attr("r", 3.5)
+    .attr("class", "rv-dot").attr("cx", d => d.x).attr("cy", d => d.y).attr("r", 5)
     .attr("fill", d => getColor(d.d)).attr("opacity", 0.75)
 
     .on("mouseover", (event, d) => {
@@ -80,30 +80,29 @@ function RadViz(data) {
       State.select([d.d.id]);
     });
 
-  const legendGroup = svg.append("g").attr("transform", `translate(8, 8)`);
+  const legendGroup = svg.append("g").attr("transform", `translate(12, 20)`);
   function buildLegend() {
     legendGroup.selectAll("*").remove();
     const entries = colorMode.value === "decade" ? [...new Set(data.data.map(record => record.decade))].sort() : ["Low", "Medium", "High", "Very High"];
     const colorFn = colorMode.value === "decade" ? State.DECADE_COLOR : State.POPULARITY_COLOR;
 
     entries.forEach((entry, i) => {
-      const row = legendGroup.append("g").attr("transform", `translate(0,${i * 13})`);
-      row.append("circle").attr("r", 4).attr("cx", 4).attr("cy", 4).attr("fill", colorFn(entry));
-      row.append("text").attr("x", 12).attr("y", 8).attr("font-size", "8px").attr("fill", "#888").text(entry);
+      const row = legendGroup.append("g").attr("transform", `translate(0,${i * 25})`);
+      row.append("circle").attr("r", 6).attr("cx", 4).attr("cy", 4).attr("fill", colorFn(entry));
+      row.append("text").attr("x", 18).attr("y", 11).attr("font-size", "20px").attr("fill", "#888").text(entry);
     });
   }
   buildLegend();
 
 
-  // Color toggle button
   const colorToggleGroup = svg.append("g").attr("transform", `translate(8,${height - 48})`);
-  colorToggleGroup.append("rect").attr("width", 110).attr("height", 18).attr("rx", 4).attr("fill", "#222").attr("stroke", "#444").attr("cursor", "pointer");
+  colorToggleGroup.append("rect").attr("width", 120).attr("height", 30).attr("rx", 5).attr("fill", "#222").attr("stroke", "#444").attr("cursor", "pointer");
 
-  const toggleLabel = colorToggleGroup.append("text").attr("x", 55).attr("y", 13).attr("text-anchor", "middle").attr("font-size", "9px").attr("fill", "#aaa").attr("pointer-events", "none").text("Color: Decade");
+  const toggleLabel = colorToggleGroup.append("text").attr("x", 60).attr("y", 22).attr("text-anchor", "middle").attr("font-size", "20px").attr("fill", "#aaa").attr("pointer-events", "none").text("Decade");
   colorToggleGroup.on("click", () => {
     colorModeIndex = (colorModeIndex + 1) % colorModes.length;
     colorMode.value = colorModes[colorModeIndex];
-    toggleLabel.text(`Color: ${colorMode.value === "decade" ? "Decade" : "Popularity"}`);
+    toggleLabel.text(`${colorMode.value === "decade" ? "Decade" : "Popularity"}`);
     dots.attr("fill", d => getColor(d.d));
     buildLegend();
   });
