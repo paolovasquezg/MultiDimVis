@@ -59,18 +59,24 @@ MultiDimVis/
 ├── app.py
 ├── requirements.txt
 ├── index.html
+├── constants/
+│   ├── consts.py
+│   └── funcs.py
 ├── data/
-│   ├── process.py          
+│   ├── process.py
 │   ├── data.csv
 │   └── processed.json
+├── images/
+│   └── dashboard.png
 └── views/
+    ├── styles.css
     ├── graphs/
     │   ├── radviz.js
     │   ├── star.js
     │   ├── parallel.js
     │   └── pca.js
     └── helpers/
-        ├── state.js  
+        ├── state.js
         └── main.js
 ```
 
